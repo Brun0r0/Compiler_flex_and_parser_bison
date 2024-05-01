@@ -8,6 +8,7 @@
 
 %%
 
+"int" {return INT; }
 
 "cata_esse" { return SCAN; }
 "pega_visao" { return PRINT; }
@@ -30,23 +31,25 @@
 "+" { return MAIS; }
 "-" { return MENOS; }
 "%" { return RESTO; }
-"!" { return NEGACAO; }
+"!" { return NAO; }
 
 "(" { return LPAR; }
 ")" { return RPAR; }
-"[" { return RCOL; }
-"]" { return LCOL; }
-"{" { return RCHAV; }
-"}" { return LCHAV; }
+"[" { return LCOL; }
+"]" { return RCOL; }
+"{" { return LCHAV; }
+"}" { return RCHAV; }
 
 "=" { return ATRIB; }
 "&" { return AND; }
 "|" { return OR; }
 
+"," { return VIRGULA; }
+
 "zeh" { return PEV; }
 
-[0-9]+ { return NUM; }
-[a-zA-Z][a-zA-Z0-9_]* { return ID; }
+[0-9]+ {  yylval.int_val = atoi(yytext); return NUM; }
+[a-zA-Z][a-zA-Z0-9_]* { yylval.str_val = strdup(yytext); return ID; }
 " " {}
 "\n" {}
 

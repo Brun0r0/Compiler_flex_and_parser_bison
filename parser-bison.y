@@ -2,10 +2,17 @@
 #include <stdio.h>
 %}
 
+%union {
+    char *str_val;
+    int int_val;
+}
+
 /* lista de tokens */
-%token  PEV SCAN PRINT IF ELSE WHILE FOR MAIOR MENOR MAIORIGUAL MENORIGUAL
-        DIFERENTE IGUAL MULT DIV MAIS MENOS RESTO NEGACAO LPAR RPAR RCOL 
-        LCOL RCHAV LCHAV ATRIB AND OR NUM ID
+%token  INT PEV SCAN PRINT IF ELSE WHILE FOR MAIOR MENOR MAIORIGUAL MENORIGUAL
+        DIFERENTE IGUAL MULT DIV MAIS MENOS RESTO NAO LPAR RPAR RCOL 
+        LCOL RCHAV LCHAV ATRIB AND OR <int_val>NUM <str_val>ID VIRGULA
+
+%define parse.error verbose
 
 %%
 
@@ -15,54 +22,85 @@ programa :      blocos ;
 blocos :        bloco |         /*bloco de códigos*/
                 bloco blocos ;
 
-bloco :         linha |         /*linha de código*/
-                linha linhas ;
-        
-linha :         decVar |        /*declarar variavel*/
-                atrib |         /*atribuicao*/
-                funcao |        /*funções de escrita e leitura*/
-                comparacao |
+bloco :         LCHAV linhas RCHAV ;
 
+linhas :        linha |         /*linha de código*/
+                linha linhas ; 
+        
+linha :         declVar |        /*declarar variavel*/
+                atrib |         /*atribuicao*/
+                condicao |
+                funcao ;        /*funções de escrita e leitura*/
+                
 
 /*declaracao de variaveis*/
 
-declVar :           tipoVar listaVariaveis PEV ; 
+declVar :           INT listaVariaveis PEV ; 
 
-tipoVar :           INT ;
-
-listaVariaveis :    var , listaVariaveis |
-                    var ;
+listaVariaveis :    var |
+                    var VIRGULA listaVariaveis ;
 
 var :               varId | 
-                    varId ATRIB valor ;
+                    varId ATRIB NUM ;
 
 varId :             ID |
-                    ID LCOL NUM RCOL
+                    ID LCOL NUM RCOL ;
 
 
 /*atribuicao*/
 
-declAtrib :         atribs PEV ;
+atrib :             ID ATRIB expr PEV ;
 
-atribs :            atrib , atribs |
-                    atrib ;
+expr :              expr MAIS termo |
+                    expr MENOS termo |
+                    termo ;
 
-atrib :             atribuido ATRIB atribue;
+termo :             termo DIV fator | 
+                    termo MULT fator | 
+                    termo RESTO fator |
+                    fator ;
 
-atribuido :         ID |
-                    ID LCOL NUM RCOL |
-                    ID LCOL ID RCOL ;
+fator :             ID | 
+                    NUM | 
+                    LPAR expr RPAR ;
 
-atribue :           atribuido |         /*tem tudo que o "atribuido" possui e pode ser um valor tambem*/ 
-                    NUM ;
+/*comparacao*/
+
+condicao :          IF LPAR comparacoes RPAR ;
+
+comparacoes:        comparacao |
+                    comparacao AND comparacoes |
+                    comparacao OR comparacoes ;
+
+
+comparacao :        expr comparar expr |
+                    NAO LPAR expr comparar expr RPAR ;
+
+comparar :          MAIOR |
+                    MENOR |
+                    MAIORIGUAL |
+                    MENORIGUAL |
+                    DIFERENTE |
+                    IGUAL ;
 
 
 
 
 
 
+/*funcoes escrever e ler*/
 
-condicao :      IF LPAR conds RPAR PEV
+
+
+funcao :             /*imprimir mensagem*/
+                scan ;      /*ler variavel*/
+
+
+scan :          SCAN LPAR ID RPAR PEV ;
+
+
+
+condicao :      IF LPAR conds RPAR PEV ;
 
 conds :         cond |
                 cond AND conds |
@@ -73,27 +111,10 @@ cond :          ID MAIOR  |
                 ID MENOR  |
                 ID MENORIGUAL  |
                 ID IGUAL  |
-                ID DIFERENTE  |
+                ID DIFERENTE  ;
 
 
 
-
-
-funcao :        print |     /*imprimir mensagem*/
-                scan ;      /*ler variavel*/
-
-
-
-
-
-
-print :         PRINT LPAR string RPAR PEV
-
-scan :          SCAN LPAR ID RPAR PEV
-
-/* Verificar essa parte para colocar um texto e como deve ser as possibilidades de printf*/
-string :    text |
-            text NUM 
 
 
 
@@ -119,7 +140,7 @@ void yyerror(char *s) { fprintf(stderr,"ERRO: %s\n", s); }
  * compilar todo o código:
 
  $ bison -d parser-bison.y
- $ flex lexico-flex.l
+ $ flex flex.l
  $ gcc -o compilador lex.yy.c parser-bison.tab.c
 
  (Pessoal Linux-friendly: considerem escrever um Makefile) */
