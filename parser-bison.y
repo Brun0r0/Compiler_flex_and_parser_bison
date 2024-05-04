@@ -1,47 +1,57 @@
 %{
 #include <stdio.h>
+
+int contl = 1;
 %}
 
 %union {
-    char *str_val;
-    int int_val;
+    char *texto;
+    char *id_nome;
+    int valor_int
 }
 
-/* lista de tokens */
-%token  INT PEV SCAN PRINT IF ELSE WHILE FOR MAIOR MENOR MAIORIGUAL MENORIGUAL
-        DIFERENTE IGUAL MULT DIV MAIS MENOS RESTO NAO LPAR RPAR RCOL 
-        LCOL RCHAV LCHAV ATRIB AND OR <int_val>NUM <str_val>ID VIRGULA
 
-%define parse.error verbose
+/* lista de tokens */
+%token  INT 
+        SCAN PRINT 
+        IF ELSE 
+        WHILE FOR 
+        AND OR 
+        MAIOR MENOR MAIORIGUAL MENORIGUAL DIFERENTE IGUAL NAO
+        MULT DIV MAIS MAISMAIS MENOS MENOSMENOS RESTO ATRIB
+        LPAR RPAR RCOL LCOL RCHAV LCHAV 
+        <valor_int>NUM <id_nome>ID <texto>TEXTO 
+        PEV VIRGULA
+        
 
 %%
 
+programa :          blocos ; 
 
-programa :      blocos ; 
+blocos :            bloco |         /*bloco de códigos*/
+                    bloco blocos ;
 
-blocos :        bloco |         /*bloco de códigos*/
-                bloco blocos ;
+bloco :             LCHAV linhas RCHAV ;
 
-bloco :         LCHAV linhas RCHAV ;
-
-linhas :        linha |         /*linha de código*/
-                linha linhas ; 
+linhas :            linha |         /*linha de código*/
+                    linha linhas ; 
         
-linha :         declVar |        /*declarar variavel*/
-                atrib |         /*atribuicao*/
-                condicao |
-                funcao ;        /*funções de escrita e leitura*/
-                
+linha :             declVar PEV |        /*declarar variavel*/
+                    atrib PEV |         /*atribuicao*/
+                    selecao |
+                    laco |
+                    funcao PEV ;
+
 
 /*declaracao de variaveis*/
 
-declVar :           INT listaVariaveis PEV ; 
+declVar :           INT listaVariaveis ; 
 
 listaVariaveis :    var |
                     var VIRGULA listaVariaveis ;
 
 var :               varId | 
-                    varId ATRIB NUM ;
+                    varId ATRIB expr ;
 
 varId :             ID |
                     ID LCOL NUM RCOL ;
@@ -49,7 +59,8 @@ varId :             ID |
 
 /*atribuicao*/
 
-atrib :             ID ATRIB expr PEV ;
+atrib :             ID ATRIB expr |
+                    ID LCOL expr RCOL ATRIB expr ;
 
 expr :              expr MAIS termo |
                     expr MENOS termo |
@@ -61,82 +72,78 @@ termo :             termo DIV fator |
                     fator ;
 
 fator :             ID | 
-                    NUM | 
+                    NUM |
+                    ID LCOL NUM RCOL |
+                    ID LCOL ID RCOL |
                     LPAR expr RPAR ;
 
-/*comparacao*/
+/*selecao*/
 
-condicao :          IF LPAR comparacoes RPAR ;
+selecao :           IF LPAR listCond RPAR bloco |
+                    IF LPAR listCond RPAR bloco selecao2 ;
 
-comparacoes:        comparacao |
-                    comparacao AND comparacoes |
-                    comparacao OR comparacoes ;
+selecao2 :          ELSE IF LPAR listCond RPAR bloco |
+                    ELSE IF LPAR listCond RPAR bloco selecao2 |
+                    ELSE bloco ;
 
+listCond :          comp |
+                    comp AND listCond |
+                    comp OR listCond ;
 
-comparacao :        expr comparar expr |
-                    NAO LPAR expr comparar expr RPAR ;
-
-comparar :          MAIOR |
+comp :              expr simbComp expr |
+                    NAO LPAR listCond RPAR ;
+                    
+simbComp :          MAIOR |
                     MENOR |
                     MAIORIGUAL |
                     MENORIGUAL |
                     DIFERENTE |
                     IGUAL ;
 
+laco :              while |
+                    for ;
 
+while :             WHILE LPAR listCond RPAR bloco;
 
+for :               FOR LPAR INT var VIRGULA comp VIRGULA expr RPAR bloco |
+                    FOR LPAR var VIRGULA comp VIRGULA expr RPAR bloco |
 
+funcao :            scan |
+                    printf ;
+                    
+scan :              SCAN LPAR varId RPAR |
+                    SCAN LPAR ID LCOL ID RCOL RPAR;
 
+printf :            PRINT LPAR text RPAR ;
 
-/*funcoes escrever e ler*/
-
-
-
-funcao :             /*imprimir mensagem*/
-                scan ;      /*ler variavel*/
-
-
-scan :          SCAN LPAR ID RPAR PEV ;
-
-
-
-condicao :      IF LPAR conds RPAR PEV ;
-
-conds :         cond |
-                cond AND conds |
-                cond OR conds ;
-
-cond :          ID MAIOR  |
-                ID MAIORIGUAL  |
-                ID MENOR  |
-                ID MENORIGUAL  |
-                ID IGUAL  |
-                ID DIFERENTE  ;
-
-
-
-
-
-
+text :              TEXTO |
+                    TEXTO VIRGULA text |
+                    ID |
+                    ID VIRGULA text |
+                    ID LCOL NUM RCOL |
+                    ID LCOL NUM RCOL VIRGULA text |
+                    ID LCOL ID RCOL |
+                    ID LCOL ID RCOL VIRGULA text ;
+                
 %%
 
-// extern FILE *yyin;                   // (*) descomente para ler de um arquivo
+extern FILE *yyin;
 
 int main(int argc, char *argv[]) {
 
-//    yyin = fopen(argv[1], "r");       // (*)
+    yyin = fopen("programa.txt", "r");
 
-    yyparse();                          // A função yyparse() inicia o parser
+    yyparse();
 
-//    fclose(yyin);                     // (*)
+    fclose(yyin);
 
     return 0;
 }
 
-// A função yyerror() será chamada quando o parser encontrar um erro sintatico
-void yyerror(char *s) { fprintf(stderr,"ERRO: %s\n", s); }
+void yyerror(char *s) { fprintf(stderr,"Sintax Error\n"); }
 
-/* Lembre-se de excutar primeiro o bison (com -d); depois o flex; depois
+/*
+
  * compilar todo o código:
 
  $ bison -d parser-bison.y

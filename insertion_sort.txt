@@ -1,0 +1,28 @@
+{
+    int tam zeh
+    int vetor[100] zeh
+
+    $$ o vetor pode ter tamanho max 100
+
+    cata_esse(tam) zeh
+
+    repete_um_tanto(int i = 0 , i mais_menor tam , i + 1)
+    {
+        cata_esse(vetor[i]) zeh
+    }
+
+    int i, j, eleito zeh
+
+    repete_um_tanto(i = 1 , i mais_menor tam , i + 1)
+    {
+        eleito = vetor[i] zeh
+        j = i-1 zeh
+
+        faz_umas_vez(j mais_maior_ou_ingual 0 & vetor[j] mais_maior eleito)
+        {
+            vetor[j+1] = vetor[j] zeh
+            j = j - 1 zeh
+        }
+        vetor[j + 1] = eleito zeh
+    }
+}

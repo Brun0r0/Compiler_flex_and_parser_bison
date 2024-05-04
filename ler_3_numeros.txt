@@ -1,0 +1,20 @@
+{
+    int num1 , num2, num3 zeh
+
+    cata_esse(num1) zeh
+    cata_esse(num2) zeh
+    cata_esse(num3) zeh
+
+    da_um_confere(num1 mais_maior num2 & num1 mais_maior num3)
+    {
+        pega_visao(num1) zeh
+    } 
+    si_nao da_um_confere(num2 mais_maior num1 & num2 mais_maior num3)
+    {
+        pega_visao(num2) zeh
+    } 
+    si_nao
+    {
+        pega_visao(num3) zeh
+    }
+}

@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
 #include "parser-bison.tab.h"
+
+int cont = 1;
 %}
 
 
@@ -24,7 +26,7 @@
 "mais_maior_ou_ingual" { return MAIORIGUAL; }
 "mais_menor_ou_ingual" { return MENORIGUAL; }
 "nada_ingual" { return DIFERENTE; }
-"eh_ingual" { return IGUAL; }
+"ingual" { return IGUAL; }
 
 "*" { return MULT; }
 "/" { return DIV; }
@@ -32,6 +34,8 @@
 "-" { return MENOS; }
 "%" { return RESTO; }
 "!" { return NAO; }
+"++" { return MAISMAIS; }
+"--" { return MENOSMENOS; }
 
 "(" { return LPAR; }
 ")" { return RPAR; }
@@ -48,10 +52,26 @@
 
 "zeh" { return PEV; }
 
-[0-9]+ {  yylval.int_val = atoi(yytext); return NUM; }
-[a-zA-Z][a-zA-Z0-9_]* { yylval.str_val = strdup(yytext); return ID; }
-" " {}
-"\n" {}
+
+"$$".*"\n"                      /*comentario em uma linha*/
+
+
+\"[^"]*\"   { yylval.texto = strdup(yytext); return TEXTO; }
+
+
+[0-9]+      { yylval.valor_int = atoi(yytext); return NUM; }
+                 
+
+[a-zA-Z][a-zA-Z0-9_]*   { yylval.id_nome = strdup(yytext); return ID; }
+                                                   
+"\n" { cont++; }
+"\r" { }
+"\t" { }
+" "  { }
+
+
+.       { printf("Lexical Error in line %d: %s\n", cont, yytext); }
+
 
 
 %%

@@ -1,0 +1,16 @@
+{
+    int a = 0, b = 1, prox = 0 zeh
+    int fim zeh
+
+    cata_esse(fim) zeh
+
+    faz_umas_vez(prox mais_menor_ou_ingual fim)
+    {  
+        pega_visao(prox, " ") zeh
+
+        prox = a + b zeh
+        a = b zeh
+        b = prox zeh
+    }
+    
+}
