@@ -106,7 +106,7 @@ laco :              while |
 while :             WHILE LPAR listCond RPAR bloco;
 
 for :               FOR LPAR INT var VIRGULA comp VIRGULA expr RPAR bloco |
-                    FOR LPAR var VIRGULA comp VIRGULA expr RPAR bloco |
+                    FOR LPAR var VIRGULA comp VIRGULA expr RPAR bloco ;
 
 funcao :            scan |
                     printf ;
